@@ -1,9 +1,9 @@
-import requests
-import websocket
-import subprocess
-import winreg
-import json
 import os
+import json
+import winreg
+import requests
+import subprocess
+import websocket
 
 class Chrome:
     cport = 9222
@@ -27,6 +27,7 @@ class Chrome:
         args['data'] = "--user-data-dir={}".format(args['data'])
         args['port'] = "--remote-debugging-port={}".format(args['port'])
         self.proc = subprocess.Popen(args.values())
+        self.ws = self.GetPage()
 
     def close(self):
         self.proc.terminate()
@@ -51,9 +52,8 @@ class Chrome:
             "method": "Page.navigate",
             "params": {"url": url}
         }
-        ws = self.GetPage()
-        ws.send(json.dumps(script))
-        ws.recv()
+        self.ws.send(json.dumps(script))
+        self.ws.recv()
 
     def Evaluate(self, JS):
         script = {
@@ -64,11 +64,11 @@ class Chrome:
                 "returnByValue": True
             }
         }
-        ws = self.GetPage()
-        ws.send(json.dumps(script))
-        output = json.loads(ws.recv())
-        ws.close()
-        return output['result']['result']['value']
+        self.ws.send(json.dumps(script))
+        self.ws.recv()
+        #output = json.loads(self.ws.recv())
+        #self.ws.close()
+        #return output['result']['result']['value']
 
 args = {
     'path' : 'C:\Program Files\Google\Chrome\Application\chrome.exe',
@@ -78,5 +78,5 @@ args = {
     'flag' : '--no-first-run --no-default-browser-check --hide-crash-restore-bubble --disable-extensions',
 }
 inst = Chrome(args)
-inst.Navigate("https://bing.com")
-print(inst.Evaluate("document.body.innerText"))
+inst.Evaluate("document.querySelector('.gLFyf').value='openai'")
+inst.Evaluate("document.querySelectorAll('.gNO89b')[1].click()")
